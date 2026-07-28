@@ -1,10 +1,6 @@
 package org.oshanh.newsweb.service;
 
-import org.oshanh.newsweb.dto.CommentDto;
-import org.oshanh.newsweb.dto.CreateCommentRequest;
-import org.oshanh.newsweb.dto.NewsCategoryDto;
-import org.oshanh.newsweb.dto.NewsDetailDto;
-import org.oshanh.newsweb.dto.NewsHeadlineDto;
+import org.oshanh.newsweb.dto.*;
 import org.oshanh.newsweb.model.Comment;
 import org.oshanh.newsweb.model.NewsCategory;
 import org.oshanh.newsweb.model.NewsItem;
@@ -63,6 +59,63 @@ public class NewsService {
         return commentRepository.findByNewsItemIdOrderByCreatedAtDesc(newsId).stream()
                 .map(this::toCommentDto)
                 .toList();
+    }
+
+    public List<NewsHeadlineDto> listAllNews() {
+        return newsItemRepository.findAll().stream()
+                .map(this::toHeadlineDto)
+                .toList();
+    }
+
+    @Transactional
+    public NewsDetailDto createNews(CreateNewsRequest request) {
+        var cats = request.categoryIds() == null ? List.<Long>of() : request.categoryIds();
+        var categories = categoryRepository.findAllById(cats).stream().collect(java.util.stream.Collectors.toSet());
+
+        java.time.LocalDateTime publishedAt = java.time.LocalDateTime.now();
+        if (request.publishedAt() != null && !request.publishedAt().isBlank()) {
+            publishedAt = java.time.LocalDateTime.parse(request.publishedAt());
+        }
+
+        NewsItem item = new NewsItem(request.title().trim(), request.summary().trim(), request.content().trim(), request.imageUrl(), publishedAt);
+        item.setCategories(categories);
+        NewsItem saved = newsItemRepository.save(item);
+        return toDetailDto(saved);
+    }
+
+    @Transactional
+    public NewsDetailDto updateNews(Long id, CreateNewsRequest request) {
+        NewsItem item = newsItemRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "News item not found"));
+
+        if (request.title() != null) item.setTitle(request.title().trim());
+        if (request.summary() != null) item.setSummary(request.summary().trim());
+        if (request.content() != null) item.setContent(request.content().trim());
+        if (request.imageUrl() != null) item.setImageUrl(request.imageUrl());
+        if (request.publishedAt() != null && !request.publishedAt().isBlank()) item.setPublishedAt(java.time.LocalDateTime.parse(request.publishedAt()));
+
+        if (request.categoryIds() != null) {
+            var categories = categoryRepository.findAllById(request.categoryIds()).stream().collect(java.util.stream.Collectors.toSet());
+            item.setCategories(categories);
+        }
+
+        NewsItem saved = newsItemRepository.save(item);
+        return toDetailDto(saved);
+    }
+
+    @Transactional
+    public void deleteNews(Long id) {
+        if (!newsItemRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "News item not found");
+        }
+        newsItemRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found");
+        }
+        commentRepository.deleteById(commentId);
     }
 
     @Transactional
