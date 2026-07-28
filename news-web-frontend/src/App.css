@@ -7,17 +7,60 @@
 		radial-gradient(circle at right 20%, rgba(79, 70, 229, 0.26), transparent 28%),
 }
 
+/* Constrain the visible content while keeping full-bleed background */
+.app-shell > header,
+.app-shell > main {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 .app-shell-home {
 	display: flex;
 	flex-direction: column;
 	gap: 28px;
-.hero {
+}
+
+.app-shell-home .hero {
 	display: grid;
 	grid-template-columns: 1.4fr 0.9fr;
 	gap: 24px;
 	align-items: stretch;
+
 }
 
+/* Home page main wrapper */
+.home-main {
+    width: 100%;
+}
+
+/* Make the front-page categories panel span the full viewport width */
+.app-shell-home > main {
+	max-width: 100%;
+	padding: 0;
+}
+
+/* Full-bleed panel that spans the entire viewport width */
+.app-shell-home .panel.panel-wide:first-of-type {
+	width: 100vw;
+	position: relative;
+	left: 50%;
+	right: 50%;
+	margin-left: -50vw;
+	margin-right: -50vw;
+	border-radius: 0 0 28px 28px;
+	padding-left: 48px;
+	padding-right: 48px;
+	background-clip: padding-box;
+}
+
+/* Keep the category grid content centered inside the full-bleed bar */
+.app-shell-home .panel.panel-wide:first-of-type .category-grid {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding-left: 0;
+	padding-right: 0;
+}
 
 .hero-panel {
 	border-radius: 28px;
@@ -222,6 +265,7 @@
 }
 
 .detail-layout {
+	display: grid;
 	grid-template-columns: 1.4fr 0.9fr;
 }
 
@@ -326,11 +370,15 @@
 	.panel {
 		padding: 22px;
 	}
+
+	.app-shell {
+		padding: 20px;
+	}
 }
 
 @media (max-width: 720px) {
 	.app-shell {
-		padding: 16px;
+		padding: 12px;
 	}
 
 	.hero h1,
